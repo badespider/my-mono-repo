@@ -1,0 +1,47 @@
+{
+  "name": "my-mono-repo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A monorepo with backend, web, and mobile packages",
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:all": "pnpm run --parallel dev",
+    "build": "pnpm run --parallel build",
+    "build:all": "pnpm run --parallel build",
+    "lint": "pnpm run --parallel lint",
+    "lint:all": "pnpm run --parallel lint",
+    "test": "pnpm run --parallel test",
+    "test:all": "pnpm run --parallel test",
+    "test:setup": "node scripts/test-setup.js",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css}\"",
+    "prepare": "husky install"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
+  }
+}

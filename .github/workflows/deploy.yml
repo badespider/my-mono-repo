@@ -1,0 +1,122 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || (github.event.inputs.environment || 'staging') }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8.15.0
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build backend
+      run: pnpm --filter @org/backend run build
+      env:
+        NODE_ENV: production
+
+    - name: Deploy backend
+      run: |
+        echo "Deploying backend to ${{ github.ref == 'refs/heads/main' && 'production' || (github.event.inputs.environment || 'staging') }}"
+        # Add your backend deployment commands here
+        # For example: docker build, push to registry, deploy to cloud service
+
+  deploy-web:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || (github.event.inputs.environment || 'staging') }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8.15.0
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build web
+      run: pnpm --filter @org/web run build
+      env:
+        NODE_ENV: production
+
+    - name: Deploy web
+      run: |
+        echo "Deploying web to ${{ github.ref == 'refs/heads/main' && 'production' || (github.event.inputs.environment || 'staging') }}"
+        # Add your web deployment commands here
+        # For example: upload to S3, deploy to Vercel/Netlify, etc.
+
+  build-mobile:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8.15.0
+
+    - name: Setup Expo CLI
+      run: npm install -g @expo/cli
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build mobile app
+      run: |
+        cd packages/mobile
+        echo "Building mobile app for ${{ github.ref == 'refs/heads/main' && 'production' || (github.event.inputs.environment || 'staging') }}"
+        # Add Expo build commands here
+        # For example: expo build:android, expo build:ios, or EAS build commands
