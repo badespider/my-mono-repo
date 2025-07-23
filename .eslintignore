@@ -8,4 +8,5 @@ coverage
 .eslintrc.js
 *.config.js
 *.config.ts
+*.setup.js
 .husky
