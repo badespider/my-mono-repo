@@ -3,6 +3,9 @@
   "compilerOptions": {
     "composite": true,
     "baseUrl": ".",
+    "outDir": "./dist",
+    "noEmit": true,
+    "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -13,6 +16,6 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "index.js"],
+  "include": ["App.tsx", "screens/**/*", "components/**/*", "__tests__/**/*"],
   "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx"]
 }

@@ -46,3 +46,17 @@ coverage/
 
 # Expo
 .expo/
+.expo-shared/
+
+# TypeScript compiled files
+*.tsbuildinfo
+
+# TypeScript compiled files in mobile package
+packages/mobile/src/**/*.js
+packages/mobile/src/**/*.d.ts
+packages/mobile/components/**/*.js
+packages/mobile/components/**/*.d.ts
+packages/mobile/screens/**/*.js
+packages/mobile/screens/**/*.d.ts
+packages/mobile/types/**/*.js
+packages/mobile/types/**/*.d.ts

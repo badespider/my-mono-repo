@@ -9,7 +9,7 @@ import { exampleRouter } from './routes/example';
 // Load environment variables
 dotenv.config();
 
-const app = express();
+const app: express.Application = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware

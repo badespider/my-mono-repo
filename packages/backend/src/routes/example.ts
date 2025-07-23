@@ -1,17 +1,15 @@
 import { Router, Request, Response } from 'express';
+import { BaseEntity, HTTP_STATUS } from '@org/shared';
 
-const router = Router();
+const router: Router = Router();
 
-// In-memory storage for demonstration (replace with database in production)
-interface ExampleItem {
-  id: string;
+// In-memory store for demonstration
+interface Item extends BaseEntity {
   name: string;
   description?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
-let items: ExampleItem[] = [
+let items: Item[] = [
   {
     id: '1',
     name: 'Sample Item 1',
@@ -43,7 +41,7 @@ router.get('/:id', (req: Request, res: Response) => {
   const item = items.find(item => item.id === id);
 
   if (!item) {
-    return res.status(404).json({
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
       success: false,
       error: 'Item not found',
     });
@@ -60,13 +58,13 @@ router.post('/', (req: Request, res: Response) => {
   const { name, description } = req.body;
 
   if (!name) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       error: 'Name is required',
     });
   }
 
-  const newItem: ExampleItem = {
+  const newItem: Item = {
     id: Date.now().toString(),
     name,
     description,
@@ -76,7 +74,7 @@ router.post('/', (req: Request, res: Response) => {
 
   items.push(newItem);
 
-  res.status(201).json({
+  res.status(HTTP_STATUS.CREATED).json({
     success: true,
     data: newItem,
   });
@@ -90,14 +88,14 @@ router.put('/:id', (req: Request, res: Response) => {
   const itemIndex = items.findIndex(item => item.id === id);
 
   if (itemIndex === -1) {
-    return res.status(404).json({
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
       success: false,
       error: 'Item not found',
     });
   }
 
   if (!name) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       error: 'Name is required',
     });
@@ -122,7 +120,7 @@ router.delete('/:id', (req: Request, res: Response) => {
   const itemIndex = items.findIndex(item => item.id === id);
 
   if (itemIndex === -1) {
-    return res.status(404).json({
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
       success: false,
       error: 'Item not found',
     });
