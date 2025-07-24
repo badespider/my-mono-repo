@@ -14,7 +14,10 @@
     "composite": true,
     "incremental": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@org/shared/*": ["packages/shared/src/*"]
+    }
   },
   "exclude": ["node_modules", "dist", "build"]
 }

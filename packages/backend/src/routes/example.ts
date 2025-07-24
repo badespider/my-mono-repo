@@ -1,5 +1,22 @@
 import { Router, Request, Response } from 'express';
-import { BaseEntity, HTTP_STATUS } from '@org/shared';
+
+// Temporarily inline definitions for smoke test
+interface BaseEntity {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+  SERVICE_UNAVAILABLE: 503,
+} as const;
 
 const router: Router = Router();
 

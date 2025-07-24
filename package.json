@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "pnpm run --parallel dev",
     "dev:all": "pnpm run --parallel dev",
+    "dev:backend": "pnpm --filter @org/backend dev",
+    "dev:web-backend": "concurrently \"pnpm --filter @org/backend dev\" \"pnpm --filter @org/web dev\"",
+    "start:dev": "concurrently -n \"backend,frontend\" -c \"blue,green\" \"pnpm --filter @org/backend dev\" \"pnpm --filter @org/web dev\"",
     "build": "pnpm run --parallel build",
     "build:all": "pnpm run --parallel build",
     "lint": "pnpm run --parallel lint",
@@ -14,7 +17,11 @@
     "test:all": "pnpm run --parallel test",
     "test:setup": "node scripts/test-setup.js",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "web:dev": "pnpm --filter @org/web dev",
+    "web:build": "pnpm --filter @org/web build",
+    "web:lint": "pnpm --filter @org/web lint",
+    "vite:build-all": "node scripts/vite-build-all.js"
   },
   "workspaces": [
     "packages/*"
@@ -27,6 +34,7 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "concurrently": "^9.2.0",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -35,7 +43,7 @@
     "prettier": "^3.0.0",
     "typescript": "^5.1.6"
   },
-  "lint-staged-disabled": {
+  "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
       "prettier --write"

@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tasks Dashboard - AI Portfolio Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            overflow-x: auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #4a4a4a;
+            color: white;
+        }
+
+        .btn-active {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #3a3a3a;
+            color: white;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.active {
+            background: #4CAF50;
+        }
+
+        .status-dot.processing {
+            background: #FF9800;
+        }
+
+        .status-dot.idle {
+            background: #757575;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard-container {
+            padding: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        /* Table View Styles */
+        .table-view {
+            background: #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+        }
+
+        .table-header {
+            background: #3a3a3a;
+            padding: 15px;
+            border-bottom: 2px solid #555;
+        }
+
+        .table-header h3 {
+            color: #667eea;
+            font-size: 1.3em;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #404040;
+        }
+
+        th {
+            background: #3a3a3a;
+            font-weight: bold;
+            color: #667eea;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: #353535;
+            cursor: pointer;
+        }
+
+        .task-id {
+            font-family: 'Courier New', monospace;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .agent-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .agent-monitoring {
+            background: #2196F3;
+            color: white;
+        }
+
+        .agent-analysis {
+            background: #FF9800;
+            color: white;
+        }
+
+        .agent-rebalancing {
+            background: #9C27B0;
+            color: white;
+        }
+
+        .agent-alerts {
+            background: #F44336;
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 10px;
+            background: #404040;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-backlog { background: #757575; color: white; }
+        .status-todo { background: #2196F3; color: white; }
+        .status-in-progress { background: #FF9800; color: white; }
+        .status-review { background: #9C27B0; color: white; }
+        .status-done { background: #4CAF50; color: white; }
+        .status-blocked { background: #F44336; color: white; }
+
+        /* Kanban View Styles */
+        .kanban-view {
+            display: none;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .kanban-column {
+            min-width: 300px;
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+        }
+
+        .kanban-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #404040;
+        }
+
+        .kanban-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .task-count {
+            background: #404040;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        .kanban-card {
+            background: #3a3a3a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .kanban-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .card-id {
+            font-family: 'Courier New', monospace;
+            color: #4CAF50;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .card-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #ccc;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            background: #3a3a3a;
+            padding: 20px;
+            border-bottom: 2px solid #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            color: #667eea;
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0 10px;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .json-viewer {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            border: 1px solid #404040;
+        }
+
+        .json-key {
+            color: #4CAF50;
+        }
+
+        .json-string {
+            color: #FF9800;
+        }
+
+        .json-number {
+            color: #2196F3;
+        }
+
+        .json-boolean {
+            color: #9C27B0;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            background: #3a3a3a;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            color: #ccc;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #4CAF50;
+            font-size: 0.9em;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: blink 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        .eta-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .eta-time {
+            font-family: 'Courier New', monospace;
+            color: #FF9800;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filters {
+                flex-wrap: wrap;
+            }
+
+            .kanban-view {
+                flex-direction: column;
+            }
+
+            .kanban-column {
+                min-width: unset;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Live Tasks Dashboard</h1>
+        <p>Multi-Agent AI Portfolio Tracker - Real-time Task Management</p>
+    </div>
+
+    <div class="controls">
+        <div class="view-toggle">
+            <button class="btn btn-active" onclick="switchView('table')" id="tableBtn">📊 Table View</button>
+            <button class="btn btn-secondary" onclick="switchView('kanban')" id="kanbanBtn">📋 Kanban View</button>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Agent Filter</label>
+                <select class="filter-select" id="agentFilter" onchange="applyFilters()">
+                    <option value="">All Agents</option>
+                    <option value="monitoring">Monitoring</option>
+                    <option value="analysis">Analysis</option>
+                    <option value="rebalancing">Rebalancing</option>
+                    <option value="alerts">Alerts</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Status Filter</label>
+                <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                    <option value="">All Status</option>
+                    <option value="backlog">Backlog</option>
+                    <option value="todo">To Do</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="review">Review</option>
+                    <option value="done">Done</option>
+                    <option value="blocked">Blocked</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="status-indicator">
+            <div class="status-dot active"></div>
+            <span class="live-indicator">
+                <div class="live-dot"></div>
+                Live Updates Active
+            </span>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Table View -->
+        <div id="tableView" class="table-view">
+            <div class="table-header">
+                <h3>📈 Active Tasks Overview</h3>
+            </div>
+            <div class="table-container">
+                <table id="tasksTable">
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Agent</th>
+                            <th>Action</th>
+                            <th>Started</th>
+                            <th>ETA/Progress</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Kanban View -->
+        <div id="kanbanView" class="kanban-view">
+            <!-- Kanban columns will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Task Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Task details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample task data - In a real implementation, this would come from an API
+        let tasks = [
+            {
+                id: 'PT-001',
+                agent: 'monitoring',
+                action: 'Monitor Solana wallet connections',
+                started: '2024-01-20T09:30:00Z',
+                progress: 85,
+                eta: '2024-01-20T11:45:00Z',
+                status: 'in-progress',
+                priority: 'high',
+                description: 'Continuously monitor wallet connections and transaction flows for the portfolio tracker',
+                assignee: 'Agent-Monitor-01',
+                complexity: 7,
+                dependencies: ['PT-003'],
+                tags: ['solana', 'monitoring', 'wallets'],
+                lastUpdate: '2024-01-20T10:15:00Z',
+                notes: 'Currently processing 150 wallet connections per minute'
+            },
+            {
+                id: 'PT-002',
+                agent: 'analysis',
+                action: 'Analyze portfolio performance metrics',
+                started: '2024-01-20T08:15:00Z',
+                progress: 60,
+                eta: '2024-01-20T12:30:00Z',
+                status: 'in-progress',
+                priority: 'medium',
+                description: 'Generate comprehensive performance analytics for user portfolios',
+                assignee: 'Agent-Analyzer-01',
+                complexity: 8,
+                dependencies: ['PT-001'],
+                tags: ['analytics', 'performance', 'metrics'],
+                lastUpdate: '2024-01-20T10:20:00Z',
+                notes: 'Processing historical data from last 30 days'
+            },
+            {
+                id: 'PT-003',
+                agent: 'rebalancing',
+                action: 'Execute portfolio rebalancing strategy',
+                started: '2024-01-20T07:45:00Z',
+                progress: 25,
+                eta: '2024-01-20T14:00:00Z',
+                status: 'in-progress',
+                priority: 'critical',
+                description: 'Automatically rebalance portfolios based on predefined strategies',
+                assignee: 'Agent-Rebalancer-01',
+                complexity: 9,
+                dependencies: [],
+                tags: ['rebalancing', 'trading', 'automation'],
+                lastUpdate: '2024-01-20T10:10:00Z',
+                notes: 'Waiting for market conditions to stabilize'
+            },
+            {
+                id: 'PT-004',
+                agent: 'alerts',
+                action: 'Send portfolio alert notifications',
+                started: '2024-01-20T10:00:00Z',
+                progress: 100,
+                eta: '2024-01-20T10:30:00Z',
+                status: 'done',
+                priority: 'high',
+                description: 'Send real-time alerts for significant portfolio changes',
+                assignee: 'Agent-Alerter-01',
+                complexity: 5,
+                dependencies: ['PT-002'],
+                tags: ['alerts', 'notifications', 'real-time'],
+                lastUpdate: '2024-01-20T10:30:00Z',
+                notes: 'Successfully sent 45 notifications'
+            },
+            {
+                id: 'PT-005',
+                agent: 'monitoring',
+                action: 'Track DeFi protocol integrations',
+                started: null,
+                progress: 0,
+                eta: '2024-01-20T16:00:00Z',
+                status: 'todo',
+                priority: 'medium',
+                description: 'Monitor and track various DeFi protocol integrations',
+                assignee: 'Agent-Monitor-02',
+                complexity: 6,
+                dependencies: ['PT-001'],
+                tags: ['defi', 'protocols', 'integration'],
+                lastUpdate: '2024-01-20T09:00:00Z',
+                notes: 'Queued for execution'
+            },
+            {
+                id: 'PT-006',
+                agent: 'analysis',
+                action: 'Generate risk assessment reports',
+                started: null,
+                progress: 0,
+                eta: null,
+                status: 'blocked',
+                priority: 'high',
+                description: 'Create comprehensive risk assessment reports for portfolios',
+                assignee: 'Agent-Analyzer-02',
+                complexity: 8,
+                dependencies: ['PT-002', 'PT-003'],
+                tags: ['risk', 'assessment', 'reports'],
+                lastUpdate: '2024-01-20T09:30:00Z',
+                notes: 'Blocked waiting for analysis completion'
+            }
+        ];
+
+        let filteredTasks = [...tasks];
+        let currentView = 'table';
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTasksDisplay();
+            startLiveUpdates();
+        });
+
+        function switchView(view) {
+            currentView = view;
+            const tableView = document.getElementById('tableView');
+            const kanbanView = document.getElementById('kanbanView');
+            const tableBtn = document.getElementById('tableBtn');
+            const kanbanBtn = document.getElementById('kanbanBtn');
+
+            if (view === 'table') {
+                tableView.style.display = 'block';
+                kanbanView.style.display = 'none';
+                tableBtn.className = 'btn btn-active';
+                kanbanBtn.className = 'btn btn-secondary';
+                updateTableView();
+            } else {
+                tableView.style.display = 'none';
+                kanbanView.style.display = 'flex';
+                tableBtn.className = 'btn btn-secondary';
+                kanbanBtn.className = 'btn btn-active';
+                updateKanbanView();
+            }
+        }
+
+        function applyFilters() {
+            const agentFilter = document.getElementById('agentFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredTasks = tasks.filter(task => {
+                return (!agentFilter || task.agent === agentFilter) &&
+                       (!statusFilter || task.status === statusFilter);
+            });
+
+            updateTasksDisplay();
+        }
+
+        function updateTasksDisplay() {
+            if (currentView === 'table') {
+                updateTableView();
+            } else {
+                updateKanbanView();
+            }
+        }
+
+        function updateTableView() {
+            const tbody = document.getElementById('tasksTableBody');
+            tbody.innerHTML = '';
+
+            filteredTasks.forEach(task => {
+                const row = createTableRow(task);
+                tbody.appendChild(row);
+            });
+        }
+
+        function createTableRow(task) {
+            const row = document.createElement('tr');
+            row.onclick = () => showTaskDetail(task);
+
+            const startedTime = task.started ? new Date(task.started).toLocaleString() : 'Not started';
+            const etaDisplay = createETADisplay(task);
+
+            row.innerHTML = `
+                <td><span class="task-id">${task.id}</span></td>
+                <td><span class="agent-badge agent-${task.agent}">${task.agent.charAt(0).toUpperCase() + task.agent.slice(1)}</span></td>
+                <td>${task.action}</td>
+                <td>${startedTime}</td>
+                <td>${etaDisplay}</td>
+                <td><span class="status-badge status-${task.status}">${task.status.replace('-', ' ').toUpperCase()}</span></td>
+            `;
+
+            return row;
+        }
+
+        function createETADisplay(task) {
+            if (task.status === 'done') {
+                return '<span class="eta-time">✅ Completed</span>';
+            }
+
+            if (task.status === 'blocked') {
+                return '<span class="eta-time">🚫 Blocked</span>';
+            }
+
+            const progressBar = `
+                <div class="eta-display">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${task.progress}%"></div>
+                    </div>
+                    <span class="eta-time">${task.progress}%</span>
+                </div>
+            `;
+
+            return progressBar;
+        }
+
+        function updateKanbanView() {
+            const kanbanView = document.getElementById('kanbanView');
+            const statuses = ['backlog', 'todo', 'in-progress', 'review', 'done', 'blocked'];
+            const statusNames = {
+                'backlog': 'Backlog',
+                'todo': 'To Do',
+                'in-progress': 'In Progress',
+                'review': 'Review',
+                'done': 'Done',
+                'blocked': 'Blocked'
+            };
+
+            kanbanView.innerHTML = '';
+
+            statuses.forEach(status => {
+                const statusTasks = filteredTasks.filter(task => task.status === status);
+                const column = createKanbanColumn(status, statusNames[status], statusTasks);
+                kanbanView.appendChild(column);
+            });
+        }
+
+        function createKanbanColumn(status, title, tasks) {
+            const column = document.createElement('div');
+            column.className = 'kanban-column';
+
+            const header = `
+                <div class="kanban-header">
+                    <div class="kanban-title">${title}</div>
+                    <div class="task-count">${tasks.length}</div>
+                </div>
+            `;
+
+            const cards = tasks.map(task => createKanbanCard(task)).join('');
+
+            column.innerHTML = header + cards;
+            return column;
+        }
+
+        function createKanbanCard(task) {
+            const startedTime = task.started ? new Date(task.started).toLocaleString() : 'Not started';
+            
+            return `
+                <div class="kanban-card" onclick="showTaskDetail(tasks.find(t => t.id === '${task.id}'))">
+                    <div class="card-header">
+                        <span class="card-id">${task.id}</span>
+                        <span class="agent-badge agent-${task.agent}">${task.agent}</span>
+                    </div>
+                    <div class="card-title">${task.action}</div>
+                    <div class="card-meta">
+                        <span>Started: ${startedTime}</span>
+                        <span>${task.progress}%</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showTaskDetail(task) {
+            const modal = document.getElementById('taskModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = `Task Details - ${task.id}`;
+
+            const detailHTML = `
+                <div class="detail-section">
+                    <h4>📋 Basic Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Task ID</div>
+                            <div class="detail-value task-id">${task.id}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Agent</div>
+                            <div class="detail-value"><span class="agent-badge agent-${task.agent}">${task.agent}</span></div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value"><span class="status-badge status-${task.status}">${task.status.replace('-', ' ').toUpperCase()}</span></div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Priority</div>
+                            <div class="detail-value">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Progress</div>
+                            <div class="detail-value">${task.progress}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Complexity</div>
+                            <div class="detail-value">${task.complexity}/10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📝 Description</h4>
+                    <p>${task.description}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>⏱️ Timing</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Started</div>
+                            <div class="detail-value">${task.started ? new Date(task.started).toLocaleString() : 'Not started'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">ETA</div>
+                            <div class="detail-value">${task.eta ? new Date(task.eta).toLocaleString() : 'Not set'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Last Update</div>
+                            <div class="detail-value">${new Date(task.lastUpdate).toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>🏷️ Tags</h4>
+                    <p>${task.tags.map(tag => `<span class="status-badge status-todo">${tag}</span>`).join(' ')}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📊 Dependencies</h4>
+                    <p>${task.dependencies.length > 0 ? task.dependencies.map(dep => `<span class="task-id">${dep}</span>`).join(', ') : 'None'}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📝 Notes</h4>
+                    <p>${task.notes}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>🔍 Raw JSON Data</h4>
+                    <div class="json-viewer">${formatJSON(task)}</div>
+                </div>
+            `;
+
+            modalBody.innerHTML = detailHTML;
+            modal.style.display = 'block';
+        }
+
+        function formatJSON(obj) {
+            return JSON.stringify(obj, null, 2)
+                .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+                .replace(/: "([^"]*)"/g, ': <span class="json-string">"$1"</span>')
+                .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>');
+        }
+
+        function closeModal() {
+            document.getElementById('taskModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('taskModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Simulate live updates
+        function startLiveUpdates() {
+            setInterval(() => {
+                // Simulate progress updates
+                tasks.forEach(task => {
+                    if (task.status === 'in-progress' && task.progress < 100) {
+                        task.progress += Math.floor(Math.random() * 5) + 1;
+                        if (task.progress >= 100) {
+                            task.progress = 100;
+                            task.status = 'done';
+                        }
+                        task.lastUpdate = new Date().toISOString();
+                    }
+                });
+
+                // Update display if no filters are applied or current view needs refresh
+                updateTasksDisplay();
+            }, 3000); // Update every 3 seconds
+
+            // Simulate new tasks
+            setInterval(() => {
+                if (Math.random() < 0.3) { // 30% chance to add new task
+                    const newTask = generateRandomTask();
+                    tasks.push(newTask);
+                    applyFilters(); // Refresh with current filters
+                }
+            }, 10000); // Check every 10 seconds
+        }
+
+        function generateRandomTask() {
+            const agents = ['monitoring', 'analysis', 'rebalancing', 'alerts'];
+            const actions = [
+                'Monitor price movements',
+                'Analyze trading patterns',
+                'Execute stop-loss orders',
+                'Send portfolio alerts',
+                'Track liquidity pools',
+                'Calculate risk metrics'
+            ];
+            const statuses = ['todo', 'backlog'];
+            const priorities = ['low', 'medium', 'high'];
+
+            const id = `PT-${String(tasks.length + 1).padStart(3, '0')}`;
+            const agent = agents[Math.floor(Math.random() * agents.length)];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const priority = priorities[Math.floor(Math.random() * priorities.length)];
+
+            return {
+                id,
+                agent,
+                action,
+                started: null,
+                progress: 0,
+                eta: null,
+                status,
+                priority,
+                description: `Automated task: ${action}`,
+                assignee: `Agent-${agent.charAt(0).toUpperCase() + agent.slice(1)}-${Math.floor(Math.random() * 10) + 1}`,
+                complexity: Math.floor(Math.random() * 10) + 1,
+                dependencies: [],
+                tags: [agent, 'automated'],
+                lastUpdate: new Date().toISOString(),
+                notes: 'Automatically generated task'
+            };
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            } else if (event.key === 't' && event.ctrlKey) {
+                event.preventDefault();
+                switchView('table');
+            } else if (event.key === 'k' && event.ctrlKey) {
+                event.preventDefault();
+                switchView('kanban');
+            }
+        });
+    </script>
+</body>
+</html>

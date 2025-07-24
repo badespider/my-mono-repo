@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Tracker WebSocket Test Client</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-log {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f8f9fa;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .agent-update {
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+        }
+        .task-update {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .connection-msg {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 Portfolio Tracker WebSocket Test Client</h1>
+    
+    <div class="container">
+        <h2>Connection Status</h2>
+        <div id="connectionStatus" class="status disconnected">Disconnected</div>
+        <button id="connectBtn">Connect to WebSocket</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+    </div>
+
+    <div class="container">
+        <h2>📨 Real-time Messages</h2>
+        <button onclick="clearMessages()">Clear Messages</button>
+        <div id="messageLog" class="message-log"></div>
+    </div>
+
+    <div class="container">
+        <h2>🛠️ Test Controls</h2>
+        <div class="controls">
+            <div class="control-group">
+                <h3>👤 Agent Updates</h3>
+                <label>Agent ID:</label>
+                <select id="agentSelect">
+                    <option value="monitoring-agent">Portfolio Monitor</option>
+                    <option value="analysis-agent">Market Analyzer</option>
+                    <option value="rebalancing-agent">Auto Rebalancer</option>
+                    <option value="alerts-agent">Alert Manager</option>
+                </select>
+                <label>Status:</label>
+                <select id="agentStatus">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="error">Error</option>
+                </select>
+                <button onclick="simulateAgentUpdate()">Update Agent Status</button>
+            </div>
+
+            <div class="control-group">
+                <h3>📋 Task Creation</h3>
+                <label>Agent ID:</label>
+                <select id="taskAgentSelect">
+                    <option value="monitoring-agent">Portfolio Monitor</option>
+                    <option value="analysis-agent">Market Analyzer</option>
+                    <option value="rebalancing-agent">Auto Rebalancer</option>
+                    <option value="alerts-agent">Alert Manager</option>
+                </select>
+                <label>Task Type:</label>
+                <input type="text" id="taskType" placeholder="e.g., price_check, analysis, rebalance" value="price_check">
+                <label>Priority:</label>
+                <select id="taskPriority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+                <button onclick="simulateTaskCreation()">Create Task</button>
+            </div>
+
+            <div class="control-group">
+                <h3>🔄 Task Updates</h3>
+                <label>Task ID:</label>
+                <input type="text" id="taskId" placeholder="Enter task ID from created tasks">
+                <label>Status:</label>
+                <select id="taskStatus">
+                    <option value="running">Running</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                </select>
+                <label>Result (if completed):</label>
+                <input type="text" id="taskResult" placeholder="Task result data">
+                <label>Error (if failed):</label>
+                <input type="text" id="taskError" placeholder="Error message">
+                <button onclick="simulateTaskUpdate()">Update Task</button>
+            </div>
+
+            <div class="control-group">
+                <h3>📡 Custom Broadcast</h3>
+                <label>Message Type:</label>
+                <input type="text" id="customType" placeholder="e.g., portfolioUpdate, alert" value="portfolioUpdate">
+                <label>Message Data (JSON):</label>
+                <input type="text" id="customData" placeholder='{"message": "Test broadcast"}' value='{"message": "Test broadcast", "value": 12345}'>
+                <button onclick="broadcastCustomMessage()">Broadcast Message</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let messageCount = 0;
+
+        const API_BASE = 'http://localhost:4000/api';
+        const WS_URL = 'ws://localhost:4000/ws';
+
+        function connect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                return;
+            }
+
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = function(event) {
+                updateConnectionStatus(true);
+                addMessage('Connected to WebSocket server', 'connection-msg');
+            };
+
+            ws.onmessage = function(event) {
+                try {
+                    const message = JSON.parse(event.data);
+                    handleWebSocketMessage(message);
+                } catch (error) {
+                    addMessage(`Error parsing message: ${error.message}`, 'error');
+                }
+            };
+
+            ws.onclose = function(event) {
+                updateConnectionStatus(false);
+                addMessage(`Connection closed (Code: ${event.code})`, 'connection-msg');
+            };
+
+            ws.onerror = function(error) {
+                updateConnectionStatus(false);
+                addMessage(`WebSocket error: ${error.message}`, 'error');
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+
+            if (connected) {
+                statusEl.textContent = 'Connected to ws://localhost:4000/ws';
+                statusEl.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusEl.textContent = 'Disconnected';
+                statusEl.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        function handleWebSocketMessage(message) {
+            const { type, data, timestamp } = message;
+            
+            let className = 'message';
+            let displayMessage = '';
+
+            switch (type) {
+                case 'agentUpdate':
+                    className += ' agent-update';
+                    displayMessage = `🤖 Agent Update: ${data.name} (${data.id}) → Status: ${data.status}`;
+                    break;
+                case 'taskUpdate':
+                    className += ' task-update';
+                    displayMessage = `📋 Task Update: ${data.id} → Status: ${data.status}`;
+                    if (data.result) displayMessage += ` | Result: ${JSON.stringify(data.result)}`;
+                    if (data.error) displayMessage += ` | Error: ${data.error}`;
+                    break;
+                case 'connection':
+                    className += ' connection-msg';
+                    displayMessage = `🔌 ${data.message}`;
+                    break;
+                default:
+                    displayMessage = `📡 ${type}: ${JSON.stringify(data)}`;
+            }
+
+            addMessage(displayMessage, className, timestamp);
+        }
+
+        function addMessage(text, className = '', timestamp = null) {
+            const messageLog = document.getElementById('messageLog');
+            const messageEl = document.createElement('div');
+            
+            messageCount++;
+            const time = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+            
+            messageEl.className = className;
+            messageEl.innerHTML = `
+                <div>${text}</div>
+                <div class="timestamp">${time} (#${messageCount})</div>
+            `;
+            
+            messageLog.appendChild(messageEl);
+            messageLog.scrollTop = messageLog.scrollHeight;
+        }
+
+        function clearMessages() {
+            document.getElementById('messageLog').innerHTML = '';
+            messageCount = 0;
+        }
+
+        async function simulateAgentUpdate() {
+            const agentId = document.getElementById('agentSelect').value;
+            const status = document.getElementById('agentStatus').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/ws-test/simulate-agent-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agentId, status })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    addMessage(`✅ API Call: ${result.message}`, 'connection-msg');
+                } else {
+                    addMessage(`❌ API Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addMessage(`❌ Request Failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateTaskCreation() {
+            const agentId = document.getElementById('taskAgentSelect').value;
+            const type = document.getElementById('taskType').value;
+            const priority = document.getElementById('taskPriority').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/ws-test/simulate-task-creation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agentId, type, priority })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    addMessage(`✅ API Call: ${result.message}`, 'connection-msg');
+                    addMessage(`📋 Created Task ID: ${result.data.id}`, 'connection-msg');
+                    // Auto-fill task ID for updates
+                    document.getElementById('taskId').value = result.data.id;
+                } else {
+                    addMessage(`❌ API Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addMessage(`❌ Request Failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateTaskUpdate() {
+            const taskId = document.getElementById('taskId').value;
+            const status = document.getElementById('taskStatus').value;
+            const result = document.getElementById('taskResult').value;
+            const error = document.getElementById('taskError').value;
+
+            if (!taskId) {
+                addMessage('❌ Please enter a Task ID', 'error');
+                return;
+            }
+
+            const payload = { taskId, status };
+            if (result) payload.result = result;
+            if (error) payload.error = error;
+
+            try {
+                const response = await fetch(`${API_BASE}/ws-test/simulate-task-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    addMessage(`✅ API Call: ${result.message}`, 'connection-msg');
+                } else {
+                    addMessage(`❌ API Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addMessage(`❌ Request Failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function broadcastCustomMessage() {
+            const type = document.getElementById('customType').value;
+            const dataStr = document.getElementById('customData').value;
+
+            if (!type || !dataStr) {
+                addMessage('❌ Please enter both type and data', 'error');
+                return;
+            }
+
+            try {
+                const data = JSON.parse(dataStr);
+                
+                const response = await fetch(`${API_BASE}/ws-test/broadcast-custom`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, data })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    addMessage(`✅ API Call: ${result.message}`, 'connection-msg');
+                } else {
+                    addMessage(`❌ API Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addMessage(`❌ Request Failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('connectBtn').addEventListener('click', connect);
+        document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+
+        // Initialize
+        addMessage('WebSocket Test Client Ready - Click Connect to start', 'connection-msg');
+    </script>
+</body>
+</html>
