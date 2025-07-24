@@ -1,15 +1,17 @@
-# My Mono Repo
+# AI Portfolio Tracker
 
-A modern monorepo containing backend, web, and mobile applications with shared tooling and CI/CD pipeline.
+A multi-agent AI portfolio tracker micro SaaS app on Solana using Virtuals Protocol. Features agents for monitoring, analysis, rebalancing, and alerts with live Solana wallet integration.
 
 ## 📁 Project Structure
 
 ```
-my-mono-repo/
+ai-portfolio-tracker/
 ├── packages/
-│   ├── backend/          # Node.js/Express API server
-│   ├── web/              # React/Vite web application
-│   └── mobile/           # React Native/Expo mobile app
+│   ├── backend/          # Node.js/Express API server with WebSocket support
+│   ├── web/              # React/Vite web application with shadcn/ui
+│   ├── shared/           # Shared utilities and types
+│   └── mobile/           # React Native/Expo mobile app (future)
+├── ai-portfolio-tracker/ # Next.js alternative frontend implementation
 ├── .github/
 │   └── workflows/        # CI/CD pipelines
 ├── .husky/               # Git hooks
@@ -22,16 +24,38 @@ my-mono-repo/
 
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
+- Solana CLI (for Solana testnet integration)
+- Phantom Wallet or similar Solana wallet
 
 ### Installation
 
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd my-mono-repo
+cd ai-portfolio-tracker
 
 # Install dependencies for all packages
 pnpm install
+
+# Set up environment variables
+cp .env.example .env
+cp packages/backend/.env.example packages/backend/.env
+cp packages/web/.env.example packages/web/.env
+
+# Configure your environment variables in the .env files
+# See ENVIRONMENT.md for detailed setup instructions
+```
+
+### Quick Start
+
+```bash
+# Start all services in development mode
+pnpm dev
+
+# This will start:
+# - Backend API server on http://localhost:3001
+# - Web application on http://localhost:5173
+# - WebSocket server for real-time updates
 ```
 
 ## 📦 Available Scripts
@@ -84,29 +108,52 @@ pnpm --filter @org/mobile test          # Test mobile app
 pnpm --filter @org/mobile lint          # Lint mobile app
 ```
 
-## 🏗️ Packages
+## 🤖 AI Agents
+
+The application features four specialized AI agents:
+
+### 🔍 Monitoring Agent
+- Real-time portfolio tracking
+- Price alerts and notifications
+- Performance monitoring
+- Risk assessment
+
+### 📊 Analysis Agent
+- Market analysis and insights
+- Technical indicators
+- Sentiment analysis
+- Performance reporting
+
+### ⚖️ Rebalancing Agent
+- Automated portfolio rebalancing
+- Risk-based allocation adjustments
+- Dollar-cost averaging strategies
+- Smart order execution
+
+### 🚨 Alerts Agent
+- Custom alert conditions
+- Multi-channel notifications
+- Smart filtering
+- Historical alert tracking
+
+## 🏢️ Architecture
 
 ### Backend (@org/backend)
-
 - **Framework**: Node.js with Express
 - **Language**: TypeScript
-- **Features**: CORS, Helmet security, Compression
-- **Dev Tools**: Nodemon, tsx for development
+- **Features**: WebSocket real-time data, Solana integration, Agent orchestration
+- **APIs**: Portfolio management, Agent control, WebSocket endpoints
 
 ### Web (@org/web)
-
 - **Framework**: React with Vite
 - **Language**: TypeScript
+- **UI Library**: shadcn/ui components
 - **Styling**: Tailwind CSS
-- **Testing**: Vitest
-- **Features**: React Router DOM
+- **Features**: Wallet integration, Real-time updates, Agent management
 
-### Mobile (@org/mobile)
-
-- **Framework**: React Native with Expo
-- **Language**: TypeScript
-- **Navigation**: React Navigation
-- **Testing**: Jest with React Native Testing Library
+### Shared (@org/shared)
+- **Utilities**: Solana helpers, UI utilities, Type definitions
+- **Common Types**: Agent interfaces, Portfolio types, API contracts
 
 ## 🔧 Development Workflow
 
@@ -172,18 +219,60 @@ The project includes GitHub Actions workflows for:
 
 ## 🔒 Environment Variables
 
-Each package can have its own environment configuration:
+Each package requires specific environment configuration:
+
+### Backend Environment
+```bash
+# packages/backend/.env
+PORT=3001
+SOLANA_RPC_URL=https://api.devnet.solana.com
+VIRTUALS_API_KEY=your-virtuals-api-key
+WEBSOCKET_PORT=3002
+```
+
+### Web Environment
+```bash
+# packages/web/.env
+VITE_API_BASE_URL=http://localhost:3001
+VITE_WS_URL=ws://localhost:3002
+VITE_SOLANA_NETWORK=devnet
+```
+
+See `ENVIRONMENT.md` for complete environment setup guide.
+
+## 🚀 Deployment
+
+### Production Deployment
 
 ```bash
-# Backend
-packages/backend/.env
+# Build all packages
+pnpm build:all
 
-# Web
-packages/web/.env
+# Deploy backend (example using PM2)
+cd packages/backend
+pm2 start dist/index.js --name "portfolio-backend"
 
-# Mobile
-packages/mobile/.env
+# Deploy web (example using Vercel)
+cd packages/web
+vercel --prod
 ```
+
+### Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or build individual services
+docker build -t portfolio-backend ./packages/backend
+docker build -t portfolio-web ./packages/web
+```
+
+### Environment-Specific Configurations
+
+- **Development**: Uses Solana devnet, local services
+- **Staging**: Uses Solana testnet, cloud services with test data
+- **Production**: Uses Solana mainnet, full cloud infrastructure
 
 ## 🤝 Contributing
 

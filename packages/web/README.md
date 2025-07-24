@@ -1,73 +1,166 @@
-# Welcome to your Lovable project
+# AI Portfolio Tracker - Web Application
 
-## Project info
+The web frontend for the AI Portfolio Tracker, a multi-agent Solana portfolio management application.
 
-**URL**: https://lovable.dev/projects/98a7810c-43ba-4966-aee6-5af1a5a72ad2
+## 🚀 Quick Start
 
-## How can I edit this code?
+### Prerequisites
 
-There are several ways of editing your application.
+- Node.js >= 18.0.0
+- pnpm >= 8.0.0
+- Phantom Wallet or similar Solana wallet browser extension
 
-**Use Lovable**
+### Development Setup
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/98a7810c-43ba-4966-aee6-5af1a5a72ad2) and start prompting.
+```bash
+# From the root of the monorepo
+cd packages/web
 
-Changes made via Lovable will be committed automatically to this repo.
+# Install dependencies (or run from root: pnpm install)
+pnpm install
 
-**Use your preferred IDE**
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# Start development server
+pnpm dev
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Or start from monorepo root:
+# pnpm --filter @org/web dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Configuration
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# .env
+VITE_API_BASE_URL=http://localhost:3001
+VITE_WS_URL=ws://localhost:3002
+VITE_SOLANA_NETWORK=devnet
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+```
 
-**Use GitHub Codespaces**
+## 🎨 Features
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 📋 Dashboard
+- Real-time portfolio overview
+- Live performance metrics
+- Asset allocation charts
+- P&L tracking
 
-## What technologies are used for this project?
+### 🤖 Agent Management
+- Configure and control AI agents
+- Monitor agent status and performance
+- Set automation rules and triggers
+- View agent activity logs
 
-This project is built with:
+### 📊 Portfolio Analytics
+- Historical performance charts
+- Risk analysis
+- Asset correlations
+- Performance attribution
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 🔔 Alerts & Notifications
+- Custom price alerts
+- Portfolio rebalancing notifications
+- Agent status updates
+- Real-time toast notifications
 
-## How can I deploy this project?
+### 🐛 Wallet Integration
+- Connect Phantom, Solflare, and other Solana wallets
+- Real-time balance updates
+- Transaction history
+- Multi-wallet support
 
-Simply open [Lovable](https://lovable.dev/projects/98a7810c-43ba-4966-aee6-5af1a5a72ad2) and click on Share -> Publish.
+## 🏢️ Tech Stack
 
-## Can I connect a custom domain to my Lovable project?
+- **Framework**: React 18 with Vite
+- **Language**: TypeScript
+- **UI Components**: shadcn/ui
+- **Styling**: Tailwind CSS
+- **State Management**: React Query for server state
+- **Routing**: React Router DOM
+- **Charts**: Recharts
+- **Wallet Integration**: Solana Wallet Adapter
+- **Real-time**: WebSocket connection
 
-Yes, you can!
+## 📜 Available Scripts
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+# Development
+pnpm dev          # Start development server (http://localhost:5173)
+pnpm dev:host     # Start with network access
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Building
+pnpm build        # Build for production
+pnpm preview      # Preview production build
+
+# Code Quality
+pnpm lint         # Run ESLint
+pnpm lint:fix     # Fix ESLint issues
+pnpm type-check   # Run TypeScript checks
+
+# Testing
+pnpm test         # Run tests
+pnpm test:ui      # Run tests with UI
+pnpm test:coverage # Run tests with coverage
+```
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Production deployment
+vercel --prod
+```
+
+### Netlify
+
+```bash
+# Build the project
+pnpm build
+
+# Deploy dist folder to Netlify
+# Or connect your Git repository for automatic deployments
+```
+
+### Docker
+
+```bash
+# Build Docker image
+docker build -t portfolio-web .
+
+# Run container
+docker run -p 3000:3000 portfolio-web
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # shadcn/ui components
+│   ├── AgentStatusGrid.tsx
+│   ├── DashboardLayout.tsx
+│   └── ...
+├── hooks/              # Custom React hooks
+├── lib/                # Utilities and configurations
+│   ├── api/            # API client functions
+│   ├── types.ts        # TypeScript type definitions
+│   └── utils.ts        # Helper functions
+├── pages/              # Page components
+│   ├── Index.tsx       # Dashboard page
+│   ├── Agents.tsx      # Agent management
+│   ├── Portfolio.tsx   # Portfolio analytics
+│   └── ...
+└── providers/          # React context providers
+    ├── QueryProvider.tsx
+    └── WalletProvider.tsx
+```
